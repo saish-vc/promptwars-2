@@ -1,0 +1,19 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      PORT: 8000
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      NIM_API_KEY: ${NIM_API_KEY:-}
+      NIM_BASE_URL: ${NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+    ports:
+      - "8000:8000"
+  frontend:
+    build: ./frontend
+    environment:
+      BACKEND_URL: http://backend:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
