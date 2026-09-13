@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -7,11 +8,19 @@ from fastapi.responses import JSONResponse
 
 from app.core.config import settings
 from app.routers.health import router as health_router
+from app.routers.documents import router as documents_router
+from app.routers.documents import store as document_store
 
 logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="LegiFlow")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    document_store.initialize()
+    yield
+
+
+app = FastAPI(title="LegiFlow", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -20,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(health_router)
+app.include_router(documents_router)
 
 
 @app.exception_handler(RequestValidationError)
