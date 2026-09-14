@@ -11,6 +11,7 @@ from app.routers.health import router as health_router
 from app.routers.documents import router as documents_router
 from app.routers.documents import store as document_store
 from app.routers.analyze import router as analyze_router
+from app.routers.compare import router as compare_router
 
 logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -32,6 +33,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(documents_router)
 app.include_router(analyze_router)
+app.include_router(compare_router)
 
 
 @app.exception_handler(RequestValidationError)
