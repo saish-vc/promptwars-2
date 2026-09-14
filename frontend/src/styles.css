@@ -8,3 +8,19 @@ textarea { min-height: 10rem; resize: vertical; }
 button, textarea, input { font: inherit; padding: .65rem; }
 button { width: fit-content; cursor: pointer; }
 pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
+.compare-col { border: 1px solid #d7dde8; border-radius: .5rem; padding: 1rem; background: #fafbfc; }
+.compare-col h3 { margin: 0 0 1rem; }
+.compare-col textarea { min-height: 6rem; }
+.compare-controls { display: flex; gap: 1rem; align-items: center; margin-top: 1rem; flex-wrap: wrap; }
+.compare-controls label { display: flex; gap: .5rem; align-items: center; }
+.compare-controls select { padding: .5rem; font: inherit; }
+.badge { padding: .2rem .5rem; border-radius: .25rem; font-size: .85rem; font-weight: 600; color: white; }
+.badge-a { background: #2563eb; }
+.badge-b { background: #1d4ed8; }
+.badge-neutral { background: #6b7280; }
+.diff-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: .9rem; }
+.diff-table th, .diff-table td { border: 1px solid #d7dde8; padding: .6rem; text-align: left; vertical-align: top; }
+.diff-table th { background: #f1f4f9; }
+.diff-table td { max-width: 20rem; }
