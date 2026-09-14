@@ -1,4 +1,8 @@
+import logging
 import os
+
+
+logger = logging.getLogger(__name__)
 
 
 class Settings:
@@ -12,3 +16,9 @@ class Settings:
 
 
 settings = Settings()
+
+
+if not settings.nim_api_key:
+    logger.warning("NIM_API_KEY is not set; LLM paths will fail at runtime")
+else:
+    logger.info("NIM_API_KEY is configured")

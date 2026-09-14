@@ -30,18 +30,43 @@ class DocumentStore:
         return row[0] if row else None
 
 
+SUPPORTED_SUFFIXES = {".pdf", ".docx", ".txt"}
+
+
+def _first_line(content: bytes) -> str:
+    """Best-effort first non-empty line for debugging extraction failures."""
+    try:
+        text = content.decode("utf-8-sig", errors="replace")
+    except Exception:
+        text = ""
+    for line in text.splitlines():
+        if line.strip():
+            return line[:200]
+    return ""
+
+
 def extract_text(filename: str, content: bytes) -> str:
+    filename = str(filename).strip() or "unknown"
     suffix = Path(filename).suffix.lower()
+    if suffix not in SUPPORTED_SUFFIXES:
+        raise ValueError("Only PDF, DOCX, and TXT files are supported")
     try:
         if suffix == ".pdf":
             text = "\n".join(page.extract_text() or "" for page in PdfReader(BytesIO(content)).pages)
         elif suffix == ".docx":
             text = "\n".join(paragraph.text for paragraph in Document(BytesIO(content)).paragraphs)
-        elif suffix == ".txt":
+        else:  # .txt
             text = content.decode("utf-8-sig")
-        else:
-            raise ValueError("Only PDF, DOCX, and TXT files are supported")
     except Exception as exc:
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.warning(
+            "extract_text failed for %s: %s",
+            filename,
+            exc,
+            extra={"filename": filename, "first_line": _first_line(content)},
+        )
         raise ValueError("Could not extract text from this file") from exc
     if not text.strip():
         raise ValueError("This document contains no extractable text")
