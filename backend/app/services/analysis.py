@@ -30,6 +30,7 @@ def _clean_json_candidate(text: str) -> str:
             start = text.find(marker)
             if start != -1:
                 text = text[start + len(marker) :].strip()
+                break
     if text.startswith("```"):
         text = text[3:].strip()
     if text.startswith("{"):
