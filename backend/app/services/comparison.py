@@ -20,9 +20,9 @@ SYSTEM_PROMPT = (
     + "  - `clause`: a short label for the clause (e.g. 'Payment terms').\n"
     + "  - `in_a`: the relevant text from version A (a short quote or paraphrase).\n"
     + "  - `in_b`: the relevant text from version B (a short quote or paraphrase).\n"
-    + "  - `favors`: which version this clause favors — exactly one of "
-    + "`party_a`, `party_b`, or `neutral`.\n"
-    + "  - `reason`: one line explaining why this clause favors that side.\n"
+    + "  - `favors`: which party this clause favors — exactly one of "
+    + "`seller`, `buyer`, or `neutral`.\n"
+    + "  - `reason`: one line explaining why this clause favors that party.\n"
     + "  - `context_for_role`: why this difference matters specifically to the "
     + "`user_role` party, in one line.\n\n"
     + "Compare only clauses that actually differ between the two texts. "
@@ -68,7 +68,7 @@ class NIMComparisonService(ComparisonService):
             raise MalformedComparisonError("LLM response did not match the expected comparison schema") from exc
         # Sanity: ensure favors values are normalized
         for diff in parsed.differences:
-            if diff.favors not in {"party_a", "party_b", "neutral"}:
+            if diff.favors not in {"seller", "buyer", "neutral"}:
                 diff.favors = "neutral"
         return parsed
 

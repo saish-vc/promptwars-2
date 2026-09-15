@@ -17,8 +17,8 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .compare-controls label { display: flex; gap: .5rem; align-items: center; }
 .compare-controls select { padding: .5rem; font: inherit; }
 .badge { padding: .2rem .5rem; border-radius: .25rem; font-size: .85rem; font-weight: 600; color: white; }
-.badge-a { background: #2563eb; }
-.badge-b { background: #1d4ed8; }
+.badge-seller { background: #2563eb; }
+.badge-buyer { background: #1d4ed8; }
 .badge-neutral { background: #6b7280; }
 .diff-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: .9rem; }
 .diff-table th, .diff-table td { border: 1px solid #d7dde8; padding: .6rem; text-align: left; vertical-align: top; }

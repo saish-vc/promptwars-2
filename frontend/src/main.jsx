@@ -84,8 +84,8 @@ function App() {
   }
 
   function favorsBadge(favors) {
-    const label = favors === "party_a" ? "Version A" : favors === "party_b" ? "Version B" : "Neutral";
-    const cls = favors === "party_a" ? "badge-a" : favors === "party_b" ? "badge-b" : "badge-neutral";
+    const label = favors === "seller" ? "Seller" : favors === "buyer" ? "Buyer" : "Neutral";
+    const cls = favors === "seller" ? "badge-seller" : favors === "buyer" ? "badge-buyer" : "badge-neutral";
     return <span className={`badge ${cls}`}>{label}</span>;
   }
 

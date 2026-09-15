@@ -32,7 +32,7 @@ class ClauseDifference(BaseModel):
     clause: str = Field(min_length=1)
     in_a: str = Field(min_length=1)
     in_b: str = Field(min_length=1)
-    favors: str = Field(min_length=1)  # "party_a", "party_b", or "neutral"
+    favors: str = Field(min_length=1)  # "seller", "buyer", or "neutral"
     reason: str = Field(min_length=1)
     context_for_role: str = Field(min_length=1)
 
