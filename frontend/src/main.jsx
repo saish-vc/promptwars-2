@@ -18,6 +18,19 @@ function App() {
   const [compareResult, setCompareResult] = useState(null);
   const [compareError, setCompareError] = useState("");
 
+  // analysis state
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [analysisError, setAnalysisError] = useState("");
+
+  // checklist state
+  const [checklistResult, setChecklistResult] = useState(null);
+  const [checklistError, setChecklistError] = useState("");
+
+  // negotiation state
+  const [negotiationResult, setNegotiationResult] = useState(null);
+  const [negotiationError, setNegotiationError] = useState("");
+  const [selectedClause, setSelectedClause] = useState("");
+
   useEffect(() => {
     if (!api) {
       setHealth("Backend URL is not configured");
@@ -81,6 +94,66 @@ function App() {
   }
   function setDocBId(docId) {
     setDocB((prev) => ({ ...prev, docId }));
+  }
+
+  async function analyze() {
+    setAnalysisError("");
+    setAnalysisResult(null);
+    try {
+      const response = await fetch(`${api}/analyze/document`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: result?.text || text }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Analysis failed");
+      setAnalysisResult(data);
+    } catch (reason) {
+      setAnalysisError(reason.message);
+    }
+  }
+
+  async function generateChecklist() {
+    setChecklistError("");
+    setChecklistResult(null);
+    try {
+      const response = await fetch(`${api}/generate/checklist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: result?.text || text,
+          analysis: analysisResult,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Checklist generation failed");
+      setChecklistResult(data);
+    } catch (reason) {
+      setChecklistError(reason.message);
+    }
+  }
+
+  async function generateNegotiation(clauseTitle, clauseText) {
+    setNegotiationError("");
+    setNegotiationResult(null);
+    try {
+      const response = await fetch(`${api}/generate/negotiation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: result?.text || text,
+          analysis: analysisResult,
+          clause_title: clauseTitle,
+          clause_text: clauseText,
+          user_role: userRole,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Negotiation generation failed");
+      setNegotiationResult(data);
+    } catch (reason) {
+      setNegotiationError(reason.message);
+    }
   }
 
   function favorsBadge(favors) {
@@ -205,6 +278,86 @@ function App() {
               ))}
             </tbody>
           </table>
+        </section>
+      )}
+
+      <section>
+        <h2>Analyze document</h2>
+        <button onClick={analyze} disabled={!result?.text && !text}>Analyze current document</button>
+        {analysisError && <p role="alert">{analysisError}</p>}
+        {analysisResult && (
+          <div>
+            <h3>Analysis Results</h3>
+            <p><strong>Summary:</strong> {analysisResult.summary}</p>
+            <p><strong>Parties:</strong> {analysisResult.parties?.join(", ")}</p>
+            <h4>Risk Clauses</h4>
+            <ul>
+              {analysisResult.risk_clauses?.map((clause, i) => (
+                <li key={i}>
+                  <strong>{clause.title}</strong> (Score: {clause.score}) - {clause.reason}
+                </li>
+              ))}
+            </ul>
+            <button onClick={generateChecklist}>Generate Checklist</button>
+          </div>
+        )}
+      </section>
+
+      {checklistError && <p role="alert">{checklistError}</p>}
+      {checklistResult && (
+        <section>
+          <h2>Checklist & Lawyer Questions</h2>
+          <h3>Checklist</h3>
+          <ul>
+            {checklistResult.checklist?.map((item, i) => (
+              <li key={i}>{item.item} ({item.status})</li>
+            ))}
+          </ul>
+          <h3>Questions for Lawyer</h3>
+          <ul>
+            {checklistResult.lawyer_questions?.map((q, i) => (
+              <li key={i}>
+                <strong>{q.question}</strong> - Context: {q.context}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {analysisResult && (
+        <section>
+          <h2>Negotiation Assistance</h2>
+          <label>
+            Select risky clause to negotiate:
+            <select value={selectedClause} onChange={(e) => setSelectedClause(e.target.value)}>
+              <option value="">-- Select a clause --</option>
+              {analysisResult.risk_clauses?.map((clause, i) => (
+                <option key={i} value={clause.title}>{clause.title} (Score: {clause.score})</option>
+              ))}
+            </select>
+          </label>
+          <button 
+            onClick={() => {
+              const clause = analysisResult.risk_clauses?.find(c => c.title === selectedClause);
+              if (clause) generateNegotiation(clause.title, clause.reason);
+            }}
+            disabled={!selectedClause}
+          >
+            Generate Negotiation Points
+          </button>
+          {negotiationError && <p role="alert">{negotiationError}</p>}
+          {negotiationResult && (
+            <div>
+              <h3>Counter Clause</h3>
+              <p>{negotiationResult.counter_clause}</p>
+              <h3>Talking Points</h3>
+              <ul>
+                {negotiationResult.talking_points?.map((point, i) => (
+                  <li key={i}>{point}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </section>
       )}
 

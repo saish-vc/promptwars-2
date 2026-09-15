@@ -12,6 +12,8 @@ from app.routers.documents import router as documents_router
 from app.routers.documents import store as document_store
 from app.routers.analyze import router as analyze_router
 from app.routers.compare import router as compare_router
+from app.routers.checklist import router as checklist_router
+from app.routers.negotiation import router as negotiation_router
 
 logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -34,6 +36,8 @@ app.include_router(health_router)
 app.include_router(documents_router)
 app.include_router(analyze_router)
 app.include_router(compare_router)
+app.include_router(checklist_router)
+app.include_router(negotiation_router)
 
 
 @app.exception_handler(RequestValidationError)
