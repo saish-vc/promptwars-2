@@ -1,6 +1,4 @@
 import logging
-import re
-from abc import ABC, abstractmethod
 
 from app.schemas.analysis import AnalysisResponse, RiskClause
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
@@ -29,7 +27,7 @@ def _clean_json_candidate(text: str) -> str:
         if marker in text:
             start = text.find(marker)
             if start != -1:
-                text = text[start + len(marker) :].strip()
+                text = text[start + len(marker):].strip()
                 break
     if text.startswith("```"):
         text = text[3:].strip()
@@ -64,21 +62,17 @@ def _first_json_object(text: str) -> str | None:
         elif char == "}":
             depth -= 1
             if depth == 0:
-                candidate = text[start : index + 1]
+                candidate = text[start: index + 1]
                 if candidate.count('"') % 2 == 0:
                     return candidate
     return None
 
 
-class AnalysisService(ABC):
-    @abstractmethod
-    async def analyze(self, text: str) -> AnalysisResponse: ...
+class MalformedAnalysisError(RuntimeError):
+    pass
 
 
-class NIMAnalysisService(AnalysisService):
-    def __init__(self, client: AnalysisService | None = None) -> None:
-        self._client = client or self
-
+class AnalysisService:
     async def analyze(self, text: str) -> AnalysisResponse:
         prompt = ANALYSIS_SYSTEM_PROMPT + "\n\nContract text:\n\n" + text
         raw = await llm_client.complete(prompt, system_prompt="")
@@ -94,16 +88,9 @@ class NIMAnalysisService(AnalysisService):
             raise MalformedAnalysisError("LLM response did not match the expected analysis schema") from exc
         return parsed
 
-    def set_client(self, client: AnalysisService) -> None:
-        self._client = client
-
-
-class MalformedAnalysisError(RuntimeError):
-    pass
-
 
 async def analyze_document(text: str, service: AnalysisService | None = None) -> AnalysisResponse:
-    service = service or NIMAnalysisService()
+    service = service or AnalysisService()
     try:
         return await service.analyze(text)
     except MalformedAnalysisError:

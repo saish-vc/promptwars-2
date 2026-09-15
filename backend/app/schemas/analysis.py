@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic import BaseModel, Field
 
 
@@ -11,8 +9,8 @@ class RiskClause(BaseModel):
 
 class AnalysisResponse(BaseModel):
     summary: str = Field(min_length=1)
-    obligations: List[str] = Field(min_length=1)
-    risks: List[str] = Field(min_length=1)
-    key_dates: List[str] = Field(min_length=0)
-    parties: List[str] = Field(min_length=1)
-    risk_clauses: List[RiskClause] = Field(min_length=1)
+    obligations: list[str] = Field(min_length=1)
+    risks: list[str] = Field(min_length=1)
+    key_dates: list[str] = Field(min_length=0)
+    parties: list[str] = Field(min_length=1)
+    risk_clauses: list[RiskClause] = Field(min_length=1)

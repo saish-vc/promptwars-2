@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic import BaseModel, Field
 
 
@@ -19,5 +17,5 @@ class LawyerQuestion(BaseModel):
 
 
 class ChecklistResponse(BaseModel):
-    checklist: List[ChecklistItem] = Field(min_length=1)
-    lawyer_questions: List[LawyerQuestion] = Field(min_length=1)
+    checklist: list[ChecklistItem] = Field(min_length=1)
+    lawyer_questions: list[LawyerQuestion] = Field(min_length=1)

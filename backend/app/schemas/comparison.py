@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic import BaseModel, Field
 
 
@@ -39,4 +37,4 @@ class ClauseDifference(BaseModel):
 
 class ComparisonResponse(BaseModel):
     summary: str = Field(min_length=1)
-    differences: List[ClauseDifference] = Field(min_length=1)
+    differences: list[ClauseDifference] = Field(min_length=1)

@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Body, HTTPException, status
-
+from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
 
 from app.schemas.analysis import AnalysisResponse
-from app.services.analysis import analyze_document, MalformedAnalysisError
+from app.services.analysis import analyze_document
 
 router = APIRouter(prefix="/analyze", tags=["analyze"])
 
@@ -18,7 +17,5 @@ async def analyze_document_endpoint(payload: AnalyzeRequest) -> AnalysisResponse
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Document text is required")
     try:
         return await analyze_document(payload.text)
-    except MalformedAnalysisError:
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Analysis failed after retry")
     except RuntimeError as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc

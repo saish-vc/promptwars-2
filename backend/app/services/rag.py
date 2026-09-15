@@ -1,8 +1,8 @@
 import logging
-from typing import List, Tuple
 
-from app.schemas.chat import ChatRequest, ChatResponse, SourceSnippet
+from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
+from app.services.analysis import _clean_json_candidate, _first_json_object
 
 logger = logging.getLogger(__name__)
 
@@ -28,22 +28,17 @@ RAG_PROMPT_PARTIAL = (
 )
 
 
-class RAGService:
-    def __init__(self):
-        # For a minimal implementation, we'll use a simple text-based approach
-        # In production, this would use embeddings and a vector DB
-        pass
+class MalformedRAGError(RuntimeError):
+    pass
 
+
+class RAGService:
     async def chat(self, request: ChatRequest, resolve_text) -> ChatResponse:
-        # Get the document text
         text = resolve_text(request.doc_id)
         if not text:
             raise ValueError("Document not found")
 
-        # Simple keyword-based context retrieval (replace with vector search in production)
         context = self._retrieve_context(request.question, text)
-
-        # Generate answer using LLM
         prompt = RAG_SYSTEM_PROMPT + "\n\n" + RAG_PROMPT_PARTIAL.format(
             question=request.question, context=context
         )
@@ -51,38 +46,25 @@ class RAGService:
         return self._parse(raw, context)
 
     def _retrieve_context(self, question: str, text: str) -> str:
-        """Simple keyword-based context retrieval (placeholder for vector search)"""
-        # Split text into chunks
         chunks = self._chunk_text(text)
-        
-        # Score chunks based on keyword overlap with question
         question_words = set(question.lower().split())
-        scored_chunks = []
-        
-        for chunk in chunks:
-            chunk_words = set(chunk.lower().split())
-            overlap = len(question_words & chunk_words)
-            if overlap > 0:
-                scored_chunks.append((chunk, overlap))
-        
-        # Sort by overlap score and take top chunks
+        scored_chunks = [
+            (chunk, len(question_words & set(chunk.lower().split())))
+            for chunk in chunks
+        ]
+        scored_chunks = [(c, s) for c, s in scored_chunks if s > 0]
         scored_chunks.sort(key=lambda x: x[1], reverse=True)
-        top_chunks = [chunk for chunk, score in scored_chunks[:3]]
-        
+        top_chunks = [chunk for chunk, _ in scored_chunks[:3]]
         return "\n\n".join(top_chunks) if top_chunks else text[:2000]
 
-    def _chunk_text(self, text: str, chunk_size: int = 500) -> List[str]:
-        """Split text into chunks for processing"""
-        chunks = []
-        for i in range(0, len(text), chunk_size):
-            chunk = text[i:i + chunk_size]
-            if chunk.strip():
-                chunks.append(chunk)
-        return chunks
+    def _chunk_text(self, text: str, chunk_size: int = 500) -> list[str]:
+        return [
+            text[i: i + chunk_size]
+            for i in range(0, len(text), chunk_size)
+            if text[i: i + chunk_size].strip()
+        ]
 
     def _parse(self, raw: str, context: str) -> ChatResponse:
-        from app.services.analysis import _first_json_object, _clean_json_candidate
-
         candidate = _first_json_object(_clean_json_candidate(raw))
         if candidate is None:
             raise MalformedRAGError("No JSON object found in the LLM response")
@@ -90,20 +72,9 @@ class RAGService:
             parsed = ChatResponse.model_validate_json(candidate)
         except Exception as exc:
             raise MalformedRAGError("LLM response did not match the expected chat schema") from exc
-        
-        # Ensure sources are actually from the context
         if parsed.sources:
-            valid_sources = []
-            for source in parsed.sources:
-                if source.text in context or len(source.text) < 200:  # Allow short matches
-                    valid_sources.append(source)
-            parsed.sources = valid_sources
-        
+            parsed.sources = [s for s in parsed.sources if s.text in context or len(s.text) < 200]
         return parsed
-
-
-class MalformedRAGError(RuntimeError):
-    pass
 
 
 async def chat_about_contract(

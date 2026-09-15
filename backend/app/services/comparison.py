@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import logging
-from abc import ABC, abstractmethod
 
-from app.schemas.comparison import ClauseDifference, ComparisonRequest, ComparisonResponse
+from app.schemas.comparison import ComparisonRequest, ComparisonResponse
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
+from app.services.analysis import _clean_json_candidate, _first_json_object
 
 logger = logging.getLogger(__name__)
 
@@ -41,12 +39,11 @@ COMPARE_PROMPT_PARTIAL = (
 )
 
 
-class ComparisonService(ABC):
-    @abstractmethod
-    async def compare(self, request: ComparisonRequest, resolve_text) -> ComparisonResponse: ...
+class MalformedComparisonError(RuntimeError):
+    pass
 
 
-class NIMComparisonService(ComparisonService):
+class ComparisonService:
     async def compare(self, request: ComparisonRequest, resolve_text) -> ComparisonResponse:
         text_a = request.document_a.resolve(resolve_text)
         text_b = request.document_b.resolve(resolve_text)
@@ -57,8 +54,6 @@ class NIMComparisonService(ComparisonService):
         return self._parse(raw)
 
     def _parse(self, raw: str) -> ComparisonResponse:
-        from app.services.analysis import _first_json_object, _clean_json_candidate
-
         candidate = _first_json_object(_clean_json_candidate(raw))
         if candidate is None:
             raise MalformedComparisonError("No JSON object found in the LLM response")
@@ -66,15 +61,10 @@ class NIMComparisonService(ComparisonService):
             parsed = ComparisonResponse.model_validate_json(candidate)
         except Exception as exc:
             raise MalformedComparisonError("LLM response did not match the expected comparison schema") from exc
-        # Sanity: ensure favors values are normalized
         for diff in parsed.differences:
             if diff.favors not in {"seller", "buyer", "neutral"}:
                 diff.favors = "neutral"
         return parsed
-
-
-class MalformedComparisonError(RuntimeError):
-    pass
 
 
 async def compare_contracts(
@@ -82,7 +72,7 @@ async def compare_contracts(
     resolve_text,
     service: ComparisonService | None = None,
 ) -> ComparisonResponse:
-    service = service or NIMComparisonService()
+    service = service or ComparisonService()
     try:
         return await service.compare(request, resolve_text)
     except MalformedComparisonError:

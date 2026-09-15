@@ -1,8 +1,8 @@
 import logging
-from abc import ABC, abstractmethod
 
-from app.schemas.checklist import ChecklistItem, ChecklistRequest, ChecklistResponse, LawyerQuestion
+from app.schemas.checklist import ChecklistRequest, ChecklistResponse
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
+from app.services.analysis import _clean_json_candidate, _first_json_object
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +27,11 @@ CHECKLIST_PROMPT_PARTIAL = (
 )
 
 
-class ChecklistService(ABC):
-    @abstractmethod
-    async def generate(self, request: ChecklistRequest) -> ChecklistResponse: ...
+class MalformedChecklistError(RuntimeError):
+    pass
 
 
-class NIMChecklistService(ChecklistService):
+class ChecklistService:
     async def generate(self, request: ChecklistRequest) -> ChecklistResponse:
         prompt = CHECKLIST_SYSTEM_PROMPT + "\n\n" + CHECKLIST_PROMPT_PARTIAL.format(
             text=request.text, analysis=str(request.analysis)
@@ -41,8 +40,6 @@ class NIMChecklistService(ChecklistService):
         return self._parse(raw)
 
     def _parse(self, raw: str) -> ChecklistResponse:
-        from app.services.analysis import _first_json_object, _clean_json_candidate
-
         candidate = _first_json_object(_clean_json_candidate(raw))
         if candidate is None:
             raise MalformedChecklistError("No JSON object found in the LLM response")
@@ -53,15 +50,11 @@ class NIMChecklistService(ChecklistService):
         return parsed
 
 
-class MalformedChecklistError(RuntimeError):
-    pass
-
-
 async def generate_checklist(
     request: ChecklistRequest,
     service: ChecklistService | None = None,
 ) -> ChecklistResponse:
-    service = service or NIMChecklistService()
+    service = service or ChecklistService()
     try:
         return await service.generate(request)
     except MalformedChecklistError:

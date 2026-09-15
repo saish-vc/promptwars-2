@@ -179,8 +179,6 @@ class GroqClient(LLMClient):
 def build_llm_client() -> LLMClient:
     provider = (settings.llm_provider or "").lower()
     if provider == PROVIDER_GROQ:
-        if not settings.groq_api_key:
-            raise RuntimeError("GROQ_API_KEY is not configured")
         logger.info("Using Groq LLM client (model=%s)", GROQ_MODEL)
         return GroqClient()
     logger.info("Using NIM LLM client (model=%s)", NIM_MODEL)

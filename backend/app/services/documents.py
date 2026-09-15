@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from io import BytesIO
 from pathlib import Path
@@ -5,6 +6,8 @@ from uuid import uuid4
 
 from docx import Document
 from pypdf import PdfReader
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentStore:
@@ -58,9 +61,6 @@ def extract_text(filename: str, content: bytes) -> str:
         else:  # .txt
             text = content.decode("utf-8-sig")
     except Exception as exc:
-        import logging
-
-        logger = logging.getLogger(__name__)
         logger.warning(
             "extract_text failed for %s: %s",
             filename,

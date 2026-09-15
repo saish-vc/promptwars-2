@@ -1,8 +1,8 @@
 import logging
-from abc import ABC, abstractmethod
 
 from app.schemas.negotiation import NegotiationRequest, NegotiationResponse
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
+from app.services.analysis import _clean_json_candidate, _first_json_object
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +30,11 @@ NEGOTIATION_PROMPT_PARTIAL = (
 )
 
 
-class NegotiationService(ABC):
-    @abstractmethod
-    async def generate(self, request: NegotiationRequest) -> NegotiationResponse: ...
+class MalformedNegotiationError(RuntimeError):
+    pass
 
 
-class NIMNegotiationService(NegotiationService):
+class NegotiationService:
     async def generate(self, request: NegotiationRequest) -> NegotiationResponse:
         prompt = NEGOTIATION_SYSTEM_PROMPT + "\n\n" + NEGOTIATION_PROMPT_PARTIAL.format(
             user_role=request.user_role,
@@ -48,8 +47,6 @@ class NIMNegotiationService(NegotiationService):
         return self._parse(raw)
 
     def _parse(self, raw: str) -> NegotiationResponse:
-        from app.services.analysis import _first_json_object, _clean_json_candidate
-
         candidate = _first_json_object(_clean_json_candidate(raw))
         if candidate is None:
             raise MalformedNegotiationError("No JSON object found in the LLM response")
@@ -60,15 +57,11 @@ class NIMNegotiationService(NegotiationService):
         return parsed
 
 
-class MalformedNegotiationError(RuntimeError):
-    pass
-
-
 async def generate_negotiation(
     request: NegotiationRequest,
     service: NegotiationService | None = None,
 ) -> NegotiationResponse:
-    service = service or NIMNegotiationService()
+    service = service or NegotiationService()
     try:
         return await service.generate(request)
     except MalformedNegotiationError:
