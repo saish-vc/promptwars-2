@@ -339,7 +339,7 @@ function App() {
           <button 
             onClick={() => {
               const clause = analysisResult.risk_clauses?.find(c => c.title === selectedClause);
-              if (clause) generateNegotiation(clause.title, clause.reason);
+              if (clause) generateNegotiation(clause.title, clause.title + ": " + clause.reason);
             }}
             disabled={!selectedClause}
           >
