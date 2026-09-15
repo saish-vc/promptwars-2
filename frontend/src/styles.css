@@ -24,3 +24,16 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .diff-table th, .diff-table td { border: 1px solid #d7dde8; padding: .6rem; text-align: left; vertical-align: top; }
 .diff-table th { background: #f1f4f9; }
 .diff-table td { max-width: 20rem; }
+
+.chat-container { margin-top: 1rem; }
+.chat-messages { max-height: 20rem; overflow-y: auto; border: 1px solid #d7dde8; border-radius: .5rem; padding: 1rem; margin-bottom: 1rem; background: #fafbfc; }
+.chat-message { margin-bottom: 1rem; padding: .5rem; border-radius: .25rem; }
+.chat-message.user { background: #e0f2fe; margin-left: 2rem; }
+.chat-message.assistant { background: #fef3c7; margin-right: 2rem; }
+.chat-message.error { background: #fee2e2; color: #991b1b; }
+.chat-message p { margin: .25rem 0; }
+.confidence { font-size: .8rem; color: #6b7280; }
+.sources { margin-top: .5rem; font-size: .85rem; }
+.sources ul { margin: .25rem 0; padding-left: 1.5rem; }
+.chat-container form { display: flex; gap: .5rem; }
+.chat-container input { flex: 1; }

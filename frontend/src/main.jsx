@@ -31,6 +31,11 @@ function App() {
   const [negotiationError, setNegotiationError] = useState("");
   const [selectedClause, setSelectedClause] = useState("");
 
+  // chat state
+  const [chatQuestion, setChatQuestion] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatError, setChatError] = useState("");
+
   useEffect(() => {
     if (!api) {
       setHealth("Backend URL is not configured");
@@ -153,6 +158,31 @@ function App() {
       setNegotiationResult(data);
     } catch (reason) {
       setNegotiationError(reason.message);
+    }
+  }
+
+  async function sendChatMessage() {
+    if (!chatQuestion.trim() || !result?.doc_id) return;
+    setChatError("");
+    const userMessage = { role: "user", text: chatQuestion };
+    setChatMessages((prev) => [...prev, userMessage]);
+    setChatQuestion("");
+    
+    try {
+      const response = await fetch(`${api}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          doc_id: result.doc_id,
+          question: chatQuestion,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Chat failed");
+      setChatMessages((prev) => [...prev, { role: "assistant", ...data }]);
+    } catch (reason) {
+      setChatError(reason.message);
+      setChatMessages((prev) => [...prev, { role: "error", text: reason.message }]);
     }
   }
 
@@ -358,6 +388,49 @@ function App() {
               </ul>
             </div>
           )}
+        </section>
+      )}
+
+      {result?.doc_id && (
+        <section>
+          <h2>Ask about this contract</h2>
+          <div className="chat-container">
+            <div className="chat-messages">
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`chat-message ${msg.role}`}>
+                  {msg.role === "assistant" ? (
+                    <div>
+                      <p>{msg.answer}</p>
+                      <p className="confidence">Confidence: {Math.round(msg.confidence * 100)}%</p>
+                      {msg.sources && msg.sources.length > 0 && (
+                        <div className="sources">
+                          <strong>Sources:</strong>
+                          <ul>
+                            {msg.sources.map((source, j) => (
+                              <li key={j}>"{source.text}"</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p>{msg.text}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+            <form onSubmit={(e) => { e.preventDefault(); sendChatMessage(); }}>
+              <input
+                type="text"
+                value={chatQuestion}
+                onChange={(e) => setChatQuestion(e.target.value)}
+                placeholder="Ask a question about this contract..."
+                disabled={!result?.doc_id}
+              />
+              <button type="submit" disabled={!chatQuestion.trim() || !result?.doc_id}>Send</button>
+            </form>
+            {chatError && <p role="alert">{chatError}</p>}
+          </div>
         </section>
       )}
 

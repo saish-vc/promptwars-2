@@ -14,6 +14,7 @@ from app.routers.analyze import router as analyze_router
 from app.routers.compare import router as compare_router
 from app.routers.checklist import router as checklist_router
 from app.routers.negotiation import router as negotiation_router
+from app.routers.chat import router as chat_router
 
 logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ app.include_router(analyze_router)
 app.include_router(compare_router)
 app.include_router(checklist_router)
 app.include_router(negotiation_router)
+app.include_router(chat_router)
 
 
 @app.exception_handler(RequestValidationError)
