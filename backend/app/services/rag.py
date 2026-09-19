@@ -16,7 +16,7 @@ from collections import Counter
 
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
-from app.services.analysis import _clean_json_candidate, _first_json_object
+from app.services.json_utils import clean_llm_json
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -242,13 +242,15 @@ class RAGService:
         return self._parse(raw, context)
 
     def _parse(self, raw: str, context: str) -> ChatResponse:
-        candidate = _first_json_object(_clean_json_candidate(raw))
+        candidate = clean_llm_json(raw)
         if candidate is None:
             raise MalformedRAGError("No JSON object found in the LLM response")
         try:
             parsed = ChatResponse.model_validate_json(candidate)
         except Exception as exc:
-            raise MalformedRAGError("LLM response did not match the expected chat schema") from exc
+            raise MalformedRAGError(
+                f"LLM response did not match the expected chat schema: {exc}"
+            ) from exc
         if parsed.sources:
             parsed.sources = [s for s in parsed.sources if s.text in context or len(s.text) < 200]
         return parsed

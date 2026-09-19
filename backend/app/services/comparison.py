@@ -2,7 +2,7 @@ import logging
 
 from app.schemas.comparison import ComparisonRequest, ComparisonResponse
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
-from app.services.analysis import _clean_json_candidate, _first_json_object
+from app.services.json_utils import clean_llm_json
 
 logger = logging.getLogger(__name__)
 
@@ -54,13 +54,15 @@ class ComparisonService:
         return self._parse(raw)
 
     def _parse(self, raw: str) -> ComparisonResponse:
-        candidate = _first_json_object(_clean_json_candidate(raw))
+        candidate = clean_llm_json(raw)
         if candidate is None:
             raise MalformedComparisonError("No JSON object found in the LLM response")
         try:
             parsed = ComparisonResponse.model_validate_json(candidate)
         except Exception as exc:
-            raise MalformedComparisonError("LLM response did not match the expected comparison schema") from exc
+            raise MalformedComparisonError(
+                f"LLM response did not match the expected comparison schema: {exc}"
+            ) from exc
         for diff in parsed.differences:
             if diff.favors not in {"seller", "buyer", "neutral"}:
                 diff.favors = "neutral"

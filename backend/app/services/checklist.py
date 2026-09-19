@@ -2,7 +2,7 @@ import logging
 
 from app.schemas.checklist import ChecklistRequest, ChecklistResponse
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
-from app.services.analysis import _clean_json_candidate, _first_json_object
+from app.services.json_utils import clean_llm_json
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +40,15 @@ class ChecklistService:
         return self._parse(raw)
 
     def _parse(self, raw: str) -> ChecklistResponse:
-        candidate = _first_json_object(_clean_json_candidate(raw))
+        candidate = clean_llm_json(raw)
         if candidate is None:
             raise MalformedChecklistError("No JSON object found in the LLM response")
         try:
             parsed = ChecklistResponse.model_validate_json(candidate)
         except Exception as exc:
-            raise MalformedChecklistError("LLM response did not match the expected checklist schema") from exc
+            raise MalformedChecklistError(
+                f"LLM response did not match the expected checklist schema: {exc}"
+            ) from exc
         return parsed
 
 

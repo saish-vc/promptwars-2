@@ -2,7 +2,7 @@ import logging
 
 from app.schemas.negotiation import NegotiationRequest, NegotiationResponse
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
-from app.services.analysis import _clean_json_candidate, _first_json_object
+from app.services.json_utils import clean_llm_json
 
 logger = logging.getLogger(__name__)
 
@@ -47,13 +47,15 @@ class NegotiationService:
         return self._parse(raw)
 
     def _parse(self, raw: str) -> NegotiationResponse:
-        candidate = _first_json_object(_clean_json_candidate(raw))
+        candidate = clean_llm_json(raw)
         if candidate is None:
             raise MalformedNegotiationError("No JSON object found in the LLM response")
         try:
             parsed = NegotiationResponse.model_validate_json(candidate)
         except Exception as exc:
-            raise MalformedNegotiationError("LLM response did not match the expected negotiation schema") from exc
+            raise MalformedNegotiationError(
+                f"LLM response did not match the expected negotiation schema: {exc}"
+            ) from exc
         return parsed
 
 

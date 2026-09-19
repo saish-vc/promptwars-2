@@ -2,8 +2,13 @@ import logging
 
 from app.schemas.analysis import AnalysisResponse, RiskClause
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
+from app.services.json_utils import clean_llm_json, safe_parse_json
 
 logger = logging.getLogger(__name__)
+
+# Keep old aliases for any code that imported them directly
+_clean_json_candidate = clean_llm_json
+_first_json_object = None  # No longer needed — use clean_llm_json directly
 
 
 ANALYSIS_SYSTEM_PROMPT = (
@@ -13,59 +18,23 @@ ANALYSIS_SYSTEM_PROMPT = (
     + "`summary`, `obligations`, `risks`, `key_dates`, `parties`, `risk_clauses`."
     + "\n\n"
     + "`summary`: one concise paragraph."
-    + "\n`obligations`: list of strings."
-    + "\n`risks`: list of strings."
-    + "\n`key_dates`: list of strings."
-    + "\n`parties`: list of strings."
-    + "\n`risk_clauses`: list of objects, each with `title`, `score` (0-100), and `reason`."
+    + "\n`obligations`: list of strings (at least 1 item)."
+    + "\n`risks`: list of strings (at least 1 item)."
+    + "\n`key_dates`: list of strings (can be empty [])."
+    + "\n`parties`: list of strings (at least 1 item)."
+    + "\n`risk_clauses`: list of objects, each with `title`, `score` (0-100 integer), and `reason`."
+    + "\n\nReturn ONLY valid JSON — no markdown fences, no trailing commas, no extra text."
 )
 
 
 def _clean_json_candidate(text: str) -> str:
-    text = text.strip()
-    for marker in ['```json', '```', '```JSON']:
-        if marker in text:
-            start = text.find(marker)
-            if start != -1:
-                text = text[start + len(marker):].strip()
-                break
-    if text.startswith("```"):
-        text = text[3:].strip()
-    if text.startswith("{"):
-        end = text.rfind("}")
-        if end != -1:
-            text = text[: end + 1]
-    return text.strip()
+    """Backwards-compatible shim — delegates to json_utils.clean_llm_json."""
+    return clean_llm_json(text) or text
 
 
 def _first_json_object(text: str) -> str | None:
-    start = text.find("{")
-    if start == -1:
-        return None
-    depth = 0
-    in_string = False
-    escape = False
-    for index, char in enumerate(text[start:], start):
-        if escape:
-            escape = False
-            continue
-        if char == "\\":
-            escape = True
-            continue
-        if char == '"':
-            in_string = not in_string
-            continue
-        if in_string:
-            continue
-        if char == "{":
-            depth += 1
-        elif char == "}":
-            depth -= 1
-            if depth == 0:
-                candidate = text[start: index + 1]
-                if candidate.count('"') % 2 == 0:
-                    return candidate
-    return None
+    """Backwards-compatible shim — delegates to json_utils.clean_llm_json."""
+    return clean_llm_json(text)
 
 
 class MalformedAnalysisError(RuntimeError):
@@ -79,13 +48,15 @@ class AnalysisService:
         return self._parse(raw)
 
     def _parse(self, raw: str) -> AnalysisResponse:
-        candidate = _first_json_object(_clean_json_candidate(raw))
+        candidate = clean_llm_json(raw)
         if candidate is None:
             raise MalformedAnalysisError("No JSON object found in the LLM response")
         try:
             parsed = AnalysisResponse.model_validate_json(candidate)
         except Exception as exc:
-            raise MalformedAnalysisError("LLM response did not match the expected analysis schema") from exc
+            raise MalformedAnalysisError(
+                f"LLM response did not match the expected analysis schema: {exc}"
+            ) from exc
         return parsed
 
 
