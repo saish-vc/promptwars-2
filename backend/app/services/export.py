@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.schemas.export import LawyerPackRequest, LawyerPackResponse
 from app.services.documents import DocumentStore
@@ -7,7 +7,7 @@ from app.services.documents import DocumentStore
 
 def generate_lawyer_pack(request: LawyerPackRequest, store: DocumentStore) -> LawyerPackResponse:
     doc_text = store.get_text(request.doc_id) or ""
-    now = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     sections: list[str] = []
 
     sections.append(f"# LAWYER PACK\nGenerated: {now}\nDocument ID: {request.doc_id}\n")
