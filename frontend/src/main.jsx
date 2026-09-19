@@ -274,7 +274,11 @@ function App() {
         method: "POST",
         body,
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => {
+        throw new Error(
+          "The upload server returned a non-JSON response. Set VITE_API_URL to the deployed backend URL."
+        );
+      });
       if (!res.ok) throw new Error(data.detail || "Upload failed");
       setCurrentDoc(data);
       announce(`File ${fileInput.name} uploaded and parsed successfully.`);
