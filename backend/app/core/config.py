@@ -39,10 +39,11 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 10_485_760  # 10 MB
 
     # ── LLM providers ─────────────────────────────────────────
-    llm_provider: str = "groq"
+    llm_provider: str = "nim"
     groq_api_key: str = ""
     groq_model: str = "openai/gpt-oss-120b"
     nim_api_key: str = ""
+    nim_model: str = "meta/llama-3.2-11b-vision-instruct"
     nim_base_url: str = "https://integrate.api.nvidia.com/v1"
 
     # ── PostgreSQL ────────────────────────────────────────────

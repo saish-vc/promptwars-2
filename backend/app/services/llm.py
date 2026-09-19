@@ -45,7 +45,7 @@ LEGAL_DISCLAIMER = (
     "beyond the provided text. Encourage the user to consult a qualified lawyer."
 )
 
-NIM_MODEL = "nvidia/llama-3.1-nemotron-70b-instruct"
+NIM_MODEL = settings.nim_model or "meta/llama-3.2-11b-vision-instruct"
 GROQ_MODEL = settings.groq_model or "openai/gpt-oss-120b"
 
 GENERATION_CONFIG = {
@@ -253,7 +253,8 @@ class NIMClient(LLMClient):
 
     async def _http_client(self) -> httpx.AsyncClient:
         if self._http is None or self._http.is_closed:
-            self._http = httpx.AsyncClient(base_url=settings.nim_base_url, timeout=120.0)
+            base_url = settings.nim_base_url.rstrip("/") + "/"
+            self._http = httpx.AsyncClient(base_url=base_url, timeout=120.0)
         return self._http
 
     @_tenacity_retry()
@@ -265,9 +266,9 @@ class NIMClient(LLMClient):
         headers = build_nim_auth_headers()
 
         response = await http.post(
-            "/chat/completions",
+            "chat/completions",
             json={
-                "model": NIM_MODEL,
+                "model": settings.nim_model or NIM_MODEL,
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": prompt},
