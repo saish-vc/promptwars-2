@@ -414,7 +414,11 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
   font-size: 13px;
+  font-family: var(--font-body);
   font-weight: 500;
   color: var(--text-secondary);
   cursor: pointer;

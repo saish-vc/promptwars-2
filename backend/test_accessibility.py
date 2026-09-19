@@ -158,5 +158,9 @@ def run_accessibility_audit():
     print("=" * 70 + "\n")
 
 
+def test_accessibility_audit():
+    run_accessibility_audit()
+
+
 if __name__ == "__main__":
     run_accessibility_audit()

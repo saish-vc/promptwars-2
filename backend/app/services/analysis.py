@@ -2,14 +2,9 @@ import logging
 
 from app.schemas.analysis import AnalysisResponse, RiskClause
 from app.services.llm import LEGAL_DISCLAIMER, llm_client
-from app.services.json_utils import clean_llm_json, safe_parse_json
+from app.services.json_utils import clean_llm_json
 
 logger = logging.getLogger(__name__)
-
-# Keep old aliases for any code that imported them directly
-_clean_json_candidate = clean_llm_json
-_first_json_object = None  # No longer needed — use clean_llm_json directly
-
 
 ANALYSIS_SYSTEM_PROMPT = (
     LEGAL_DISCLAIMER

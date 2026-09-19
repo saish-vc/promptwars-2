@@ -232,7 +232,7 @@ def test_suite():
             ],
         )
 
-        with patch("app.services.comparison.compare_contracts", return_value=mock_diff):
+        with patch("app.routers.compare.compare_contracts", return_value=mock_diff):
             res_compare = client.post(
                 "/compare/contracts",
                 json={

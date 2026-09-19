@@ -597,19 +597,17 @@ function App() {
               const isActive = activeTab === step.id;
               return (
                 <React.Fragment key={step.id}>
-                  <div
+                  <button
+                    type="button"
                     className={`stepper-node ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""}`}
                     onClick={() => handleTabSelect(step.id)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && handleTabSelect(step.id)}
                     aria-label={`Step ${step.num}: ${step.label} ${isCompleted ? "(Completed)" : isActive ? "(Active)" : ""}`}
                   >
                     <div className="stepper-circle">
                       {isCompleted ? <CheckIcon /> : step.num}
                     </div>
                     <span>{step.label}</span>
-                  </div>
+                  </button>
                   {idx < STEPS.length - 1 && <div className="stepper-line-divider" aria-hidden="true"></div>}
                 </React.Fragment>
               );
