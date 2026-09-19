@@ -7,3 +7,4 @@ dist/
 *.db
 *.sqlite
 backend/*.db
+.vercel
