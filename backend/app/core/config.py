@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     embedding_dim: int = 1024
 
     # ── Fallback / legacy ─────────────────────────────────────
-    enable_fallback_mode: bool = False
+    enable_fallback_mode: bool = True
     # SQLite path — only used when enable_fallback_mode=True
     database_path: str = "/tmp/legiflow.db"
 
