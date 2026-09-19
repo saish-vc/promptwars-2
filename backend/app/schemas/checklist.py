@@ -2,8 +2,9 @@ from pydantic import BaseModel, Field
 
 
 class ChecklistRequest(BaseModel):
-    text: str = Field(min_length=1, max_length=2_000_000)
-    analysis: dict = Field(..., description="The analysis result from Stage 3")
+    text: str | None = Field(default=None, max_length=2_000_000)
+    doc_id: str | None = Field(default=None, max_length=64)
+    analysis: dict | None = Field(default=None, description="The analysis result from Stage 3")
 
 
 class ChecklistItem(BaseModel):

@@ -14,6 +14,7 @@ export default defineConfig({
       "/generate": "http://localhost:8000",
       "/chat": "http://localhost:8000",
       "/export": "http://localhost:8000",
+      "/jobs": "http://localhost:8000",
     },
   },
 });

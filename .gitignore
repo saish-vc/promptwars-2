@@ -4,3 +4,6 @@ __pycache__/
 .venv/
 node_modules/
 dist/
+*.db
+*.sqlite
+backend/*.db

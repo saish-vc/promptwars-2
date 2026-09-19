@@ -1,16 +1,39 @@
 from fastapi import APIRouter, HTTPException, status
 
+from app.core.config import settings
+from app.routers.documents import store
 from app.schemas.checklist import ChecklistRequest, ChecklistResponse
+from app.services.analysis import analyze_document
 from app.services.checklist import generate_checklist
+from app.services.documents import get_async_store
 
 router = APIRouter(prefix="/generate", tags=["generate"])
 
 
 @router.post("/checklist", response_model=ChecklistResponse)
 async def generate_checklist_endpoint(payload: ChecklistRequest) -> ChecklistResponse:
-    if not payload.text.strip():
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Document text is required")
+    text = payload.text.strip() if payload.text else ""
+    if not text and payload.doc_id:
+        if settings.enable_fallback_mode:
+            text = store.get_text(payload.doc_id) or ""
+        else:
+            text = (await get_async_store().get_text(payload.doc_id)) or ""
+    if not text.strip():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Document text or valid doc_id is required",
+        )
+
+    analysis = payload.analysis
+    if not analysis:
+        try:
+            analysis_obj = await analyze_document(text)
+            analysis = analysis_obj.model_dump()
+        except Exception:
+            analysis = {"summary": text[:200], "risks": [], "obligations": []}
+
+    req = ChecklistRequest(text=text, doc_id=payload.doc_id, analysis=analysis)
     try:
-        return await generate_checklist(payload)
+        return await generate_checklist(req)
     except RuntimeError as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc

@@ -3,15 +3,20 @@ from fastapi import APIRouter, HTTPException, status
 from app.routers.documents import store
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.rag import chat_about_contract, MalformedRAGError
+from app.core.config import settings
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 def _resolve_text(doc_id: str) -> str | None:
-    return store.get_text(doc_id)
+    """Sync text resolver — used in fallback mode only."""
+    if settings.enable_fallback_mode:
+        return store.get_text(doc_id)
+    return None  # async store will be used inside RAGService
 
 
 @router.post("", response_model=ChatResponse)
+@router.post("/contract", response_model=ChatResponse)
 async def chat_endpoint(payload: ChatRequest) -> ChatResponse:
     if not payload.question.strip():
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Question is required")
