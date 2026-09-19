@@ -303,7 +303,10 @@ class DocumentStore:
 
     def __init__(self, path: str) -> None:
         self.path = path
-        self._fallback_sqlite = settings.enable_fallback_mode
+
+    @property
+    def _fallback_sqlite(self) -> bool:
+        return settings.enable_fallback_mode
 
     def initialize(self) -> None:
         """Initialise storage — called in the FastAPI lifespan context.

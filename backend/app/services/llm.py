@@ -281,8 +281,9 @@ class NIMClient(LLMClient):
         if response.status_code == 429:
             logger.warning("NIM returned 429 — backing off (tenacity will retry)")
             raise RateLimitError("NIM rate limit exceeded")
-        if response.status_code == 503:
-            raise ServiceUnavailableError("NIM service unavailable")
+        if response.status_code in (500, 502, 503, 504):
+            logger.warning("NIM returned %s — backing off (tenacity will retry)", response.status_code)
+            raise ServiceUnavailableError(f"NIM service error {response.status_code}")
 
         try:
             response.raise_for_status()
