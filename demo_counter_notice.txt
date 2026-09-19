@@ -1,0 +1,30 @@
+RESPONSE TO NOTICE OF ALLEGED BREACH AND SETTLEMENT OFFER
+
+DATE: September 22, 2026
+
+FROM:
+Vanguard Logistics International LLC ("Licensee")
+840 Ocean Boulevard, Suite 500, Miami, FL 33139
+
+TO:
+Apex Cloud Technologies Inc. ("Licensor")
+100 Financial Way, Suite 1400, New York, NY 10005
+
+RE: Response and Counter-Proposal to Breach Notice Dated September 19, 2026
+
+Dear Ms. Vance,
+
+We acknowledge receipt of your letter dated September 19, 2026. Licensee disputes the claims as follows:
+
+1. SERVICE LEVEL AGREEMENT (SLA) CREDITS & ADJUSTED PAYMENT:
+Under SLA Section 4.3, Licensor experienced 36.4 hours of unscheduled platform downtime during July and August 2026. Licensee is entitled to $35,000.00 in SLA outage credits. Licensee proposes a net payment of $55,000.00 in full settlement of overdue fees by October 15, 2026.
+
+2. LEGITIMATE PARTNER API INTEGRATION:
+The automated queries were executed via documented partner webhooks for inventory sync and do not constitute reverse engineering under Section 9.1. Licensee agrees to a joint technical audit.
+
+3. REJECTION OF LIQUIDATED DAMAGES & PRE-SUIT MEDIATION:
+Licensee rejects the $250,000.00 liquidated damages claim as an illegal penalty and requests executive mediation under Section 17.1 before any court action.
+
+Sincerely,
+Vanguard Logistics International LLC
+By: Marcus Thorne, Chief Operating Officer

@@ -1,0 +1,50 @@
+FORMAL NOTICE OF MATERIAL BREACH OF MASTER SERVICES AGREEMENT AND DEMAND FOR IMMEDIATE CURE
+
+DATE: September 19, 2026
+DELIVERY METHOD: Registered Email & Overnight Courier
+
+FROM:
+Apex Cloud Technologies Inc. ("Licensor / Service Provider")
+100 Financial Way, Suite 1400
+New York, NY 10005
+Contact: legal@apexcloudtech.com
+
+TO:
+Vanguard Logistics International LLC ("Licensee / Customer")
+840 Ocean Boulevard, Suite 500
+Miami, FL 33139
+Attn: Legal Department & Chief Financial Officer
+
+RE: Formal Demand Notice under Master SaaS Services Agreement Dated January 15, 2025
+
+Dear Sir / Madam,
+
+PLEASE TAKE NOTICE that Vanguard Logistics International LLC ("Licensee") is in material breach of the Master SaaS Services Agreement (the "Agreement") entered into with Apex Cloud Technologies Inc. ("Licensor") on January 15, 2025.
+
+1. MONETARY BREACH AND PAYMENT DEFAULT (SECTION 3.2):
+Under Section 3.2 of the Agreement, Licensee agreed to remit recurring monthly platform fees of $45,000.00 net 30 days from invoice date. As of September 19, 2026, the following invoices remain unpaid:
+  - Invoice #INV-2026-0781 (Due July 31, 2026): $45,000.00
+  - Invoice #INV-2026-0894 (Due August 31, 2026): $45,000.00
+Total Overdue Amount: $90,000.00 (plus accrued late interest of 1.5% per month per Section 3.4).
+
+2. UNAUTHORIZED DATA EXPLOITATION & PROPRIETARY INFRINGEMENT (SECTION 9.4):
+Forensic security audit logs indicate that between August 12, 2026 and August 28, 2026, automated scraping bots registered to Licensee IP range 198.51.100.45 executed 420,000 unauthorized requests against Licensor's proprietary pricing matrix API endpoints. This action constitutes a willful violation of Section 9.4 (Reverse Engineering and Data Scraping Restrictions).
+
+3. FORMAL 15-DAY CURE DEMAND:
+Pursuant to Section 14.2 of the Agreement, Licensor hereby demands that Licensee fully cure the aforesaid material breaches within fifteen (15) calendar days from receipt of this Notice (no later than October 4, 2026 at 5:00 PM EST). Full cure requires:
+  (a) Immediate wire transfer of $90,000.00 plus $2,700.00 late interest ($92,700.00 total) to Licensor's designated bank account; and
+  (b) Submission of a signed officer certificate verifying complete cessation and deletion of all scraped data.
+
+4. REMEDIES UPON FAILURE TO CURE:
+In the event Licensee fails to cure by October 4, 2026:
+  - Platform access will be immediately suspended under Section 14.3;
+  - The remaining contract balance of $360,000.00 for the 2026-2027 term will be accelerated and become immediately due;
+  - Licensor will enforce the contractual Liquidated Damages penalty of $250,000.00 under Section 9.5; and
+  - Licensor will commence legal action in the Supreme Court of New York, seeking full monetary recovery, injunctive relief, and reasonable attorney fees under Section 18.2.
+
+5. GOVERNING LAW:
+This Notice and all claims arising hereunder shall be governed by and construed in accordance with the laws of the State of New York.
+
+Sincerely,
+Apex Cloud Technologies Inc.
+By: Eleanor Vance, General Counsel
