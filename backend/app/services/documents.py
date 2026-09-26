@@ -102,6 +102,10 @@ class BlobStorageService(ABC):
         """Download and return bytes for the given object key."""
 
     @abstractmethod
+    async def delete(self, key: str) -> None:
+        """Delete bytes for the given object key."""
+
+    @abstractmethod
     async def upload_text(self, key: str, text: str) -> str:
         """Upload UTF-8 text and return the object key."""
 
@@ -155,6 +159,10 @@ class S3BlobStorage(BlobStorageService):
             response = await client.get_object(Bucket=self._bucket, Key=key)
             return await response["Body"].read()
 
+    async def delete(self, key: str) -> None:
+        async with self._client() as client:
+            await client.delete_object(Bucket=self._bucket, Key=key)
+
     async def upload_text(self, key: str, text: str) -> str:
         return await self.upload(key, text.encode("utf-8"), content_type="text/plain; charset=utf-8")
 
@@ -182,6 +190,9 @@ class LocalBlobStorage(BlobStorageService):
         if not p.exists():
             raise FileNotFoundError(f"Blob not found: {key}")
         return p.read_bytes()
+
+    async def delete(self, key: str) -> None:
+        self._path(key).unlink(missing_ok=True)
 
     async def upload_text(self, key: str, text: str) -> str:
         return await self.upload(key, text.encode("utf-8"))

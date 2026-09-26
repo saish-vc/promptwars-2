@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "LegiFlow — AI Legal Assistant",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "primary-request",
+        "label": "Request path",
+        "focus": ["user", "vercel", "fastapi", "llm_groq", "llm_nim", "postgres"],
+        "note": "Follow a user request from browser to LLM response and back."
+      },
+      {
+        "id": "rag-path",
+        "label": "RAG / chat path",
+        "focus": ["user", "vercel", "fastapi", "redis", "postgres", "llm_groq"],
+        "note": "Retrieval-Augmented Generation: Redis cache, pgvector retrieval, then LLM generation."
+      },
+      {
+        "id": "storage-path",
+        "label": "Document storage",
+        "focus": ["vercel", "fastapi", "s3", "postgres"],
+        "note": "Document upload, parsing, blob storage, and metadata persistence."
+      }
+    ]
+  },
+  "components": [
+    { "id": "user",      "type": "external",    "label": "User",            "sublabel": "Browser / SPA",                "pos": [40,  310], "size": [130, 60] },
+    { "id": "vercel",   "type": "frontend",    "label": "Vite + React",    "sublabel": "Vercel CDN",                   "pos": [240, 310], "size": [140, 60] },
+    { "id": "fastapi",  "type": "backend",     "label": "FastAPI",         "sublabel": "Render free tier · Python",    "pos": [470, 310], "size": [150, 60] },
+    { "id": "llm_groq", "type": "external",    "label": "Groq API",        "sublabel": "openai/gpt-oss-120b (live)",   "pos": [720, 180], "size": [150, 60], "tag": "active in prod" },
+    { "id": "llm_nim",  "type": "external",    "label": "NVIDIA NIM",      "sublabel": "meta/llama-3.2-11b (local)",   "pos": [720, 440], "size": [150, 60], "tag": "NIM_API_KEY" },
+    { "id": "redis",    "type": "database",    "label": "Redis",           "sublabel": "Prompt cache · TTL 24 h",      "pos": [470, 160], "size": [140, 60] },
+    { "id": "postgres", "type": "database",    "label": "PostgreSQL",      "sublabel": "pgvector · document_chunks",   "pos": [470, 460], "size": [140, 60] },
+    { "id": "s3",       "type": "cloud",       "label": "S3 / MinIO",      "sublabel": "Blob storage · doc files",     "pos": [240, 460], "size": [140, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region",         "label": "Render (backend)",  "wraps": ["fastapi", "redis", "postgres"] },
+    { "kind": "region",         "label": "Vercel (frontend)", "wraps": ["vercel"] },
+    { "kind": "security-group", "label": "LLM Providers",    "wraps": ["llm_groq", "llm_nim"] }
+  ],
+  "connections": [
+    { "id": "user-spa",       "from": "user",     "to": "vercel",   "label": "HTTPS",              "variant": "emphasis" },
+    { "id": "spa-api",        "from": "vercel",   "to": "fastapi",  "label": "REST / JSON",        "variant": "emphasis" },
+    { "id": "api-groq",       "from": "fastapi",  "to": "llm_groq", "label": "LLM completion",     "fromSide": "right", "toSide": "left" },
+    { "id": "api-nim",        "from": "fastapi",  "to": "llm_nim",  "label": "embeddings / LLM",   "fromSide": "right", "toSide": "left", "variant": "dashed" },
+    { "id": "api-redis",      "from": "fastapi",  "to": "redis",    "label": "prompt cache",       "fromSide": "top",   "toSide": "bottom" },
+    { "id": "api-postgres",   "from": "fastapi",  "to": "postgres", "label": "async SQL + vector", "fromSide": "bottom","toSide": "top" },
+    { "id": "api-s3",         "from": "fastapi",  "to": "s3",       "label": "doc upload / fetch", "fromSide": "left",  "toSide": "right", "variant": "dashed" },
+    { "id": "s3-spa",         "from": "s3",       "to": "vercel",   "label": "static assets",      "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "violet", "title": "LLM Provider",   "items": ["Groq active on Render (openai/gpt-oss-120b)", "NVIDIA NIM active locally (meta/llama-3.2-11b)", "Tenacity retry + circuit breaker on both"] },
+    { "dot": "cyan",   "title": "RAG / Chat",     "items": ["pgvector + BM25 hybrid when EMBEDDING_ENABLED=true", "Keyword-intersection fallback (current prod default)", "Confidence score + retrieval_mode badge in UI"] },
+    { "dot": "amber",  "title": "Known Limits",   "items": ["Render free tier: 30–60 s cold start", "Ephemeral disk — docs wiped on restart", "pgvector requires Supabase/Neon (not Render free Postgres)"] }
+  ]
+}

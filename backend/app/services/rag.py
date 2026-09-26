@@ -222,11 +222,14 @@ class RAGService:
 
         # ── Context retrieval ─────────────────────────────────
         context: str | None = None
+        retrieval_mode = "keyword"  # default
 
         if settings.embedding_active:
             context = await _vector_retrieve_context(
                 doc_id=request.doc_id, question=request.question
             )
+            if context is not None:
+                retrieval_mode = "vector"
 
         if context is None:
             # Fallback: keyword matching
@@ -239,9 +242,9 @@ class RAGService:
             question=request.question, context=context
         )
         raw = await llm_client.complete(prompt, system_prompt="")
-        return self._parse(raw, context)
+        return self._parse(raw, context, retrieval_mode)
 
-    def _parse(self, raw: str, context: str) -> ChatResponse:
+    def _parse(self, raw: str, context: str, retrieval_mode: str = "keyword") -> ChatResponse:
         candidate = clean_llm_json(raw)
         if candidate is None:
             raise MalformedRAGError("No JSON object found in the LLM response")
@@ -253,6 +256,7 @@ class RAGService:
             ) from exc
         if parsed.sources:
             parsed.sources = [s for s in parsed.sources if s.text in context or len(s.text) < 200]
+        parsed.retrieval_mode = retrieval_mode  # type: ignore[assignment]
         return parsed
 
 

@@ -189,6 +189,14 @@ async def _enqueue_document(filename: str, content: bytes) -> JobAcceptedRespons
         await redis_pool.aclose()
     except Exception as exc:
         logger.exception("Failed to enqueue ARQ job: %s", exc)
+        try:
+            async with get_session() as session:
+                document = await session.get(Document, doc_id)
+                if document:
+                    await session.delete(document)
+            await blob_storage.delete(raw_key)
+        except Exception:
+            logger.exception("Failed to clean up unqueued document: doc_id=%s", doc_id)
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Failed to queue document processing job",

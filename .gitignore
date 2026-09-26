@@ -8,3 +8,6 @@ dist/
 *.sqlite
 backend/*.db
 .vercel
+_final*.json
+*.visual-check.*
+.agents/

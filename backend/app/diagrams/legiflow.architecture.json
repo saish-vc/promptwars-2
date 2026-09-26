@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "LegiFlow — AI Legal Notice & Contract Analysis Engine",
+    "subtitle": "FastAPI backend  ·  React frontend  ·  NVIDIA NIM LLM  ·  PostgreSQL + Redis + S3",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "overview", "label": "System overview", "focus": ["user", "lb", "api", "db", "redis", "s3", "worker", "llm"] },
+      { "id": "ingest", "label": "Frontend to backend request flow", "focus": ["user", "lb", "api", "db", "redis", "s3"] },
+      { "id": "ai", "label": "AI & background processing", "focus": ["api", "redis", "worker", "llm", "vec", "chk", "exp"] }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [320, 240],
+    "cols": 8,
+    "gapX": 36,
+    "gapY": 36
+  },
+  "components": [
+    { "id": "user", "type": "external", "label": "User", "sublabel": "Browser / Mobile", "pos": [320, 240], "size": [130, 55] },
+    { "id": "lb", "type": "cloud", "label": "L B", "sublabel": ":443 Cloudflare", "pos": [560, 240], "size": [110, 55] },
+    { "id": "api", "type": "backend", "label": "FastAPI", "sublabel": "app.main :8000", "pos": [1040, 240], "size": [150, 55] },
+    { "id": "chk", "type": "backend", "label": "Check & Neg", "sublabel": "checklist / negotiation", "pos": [1400, 240], "size": [140, 55] },
+    { "id": "exp", "type": "backend", "label": "Export", "sublabel": "Markdown / PDF", "pos": [1850, 240], "size": [130, 55] },
+    { "id": "worker", "type": "backend", "label": "ARQ Worker", "sublabel": "async jobs", "pos": [1400, 440], "size": [140, 55] },
+    { "id": "llm", "type": "external", "label": "NVIDIA NIM", "sublabel": "llama-3.2-11b-vision-instruct", "pos": [1850, 540], "size": [200, 70] },
+    { "id": "vec", "type": "database", "label": "pgvector", "sublabel": "embeddings", "pos": [1600, 640], "size": [130, 55] },
+    { "id": "db", "type": "database", "label": "Postgres", "sublabel": "pgvector + jobs", "pos": [1100, 820], "size": [150, 55] },
+    { "id": "redis", "type": "database", "label": "Redis", "sublabel": "cache / queue", "pos": [600, 820], "size": [130, 55] },
+    { "id": "s3", "type": "cloud", "label": "S3 / MinIO", "sublabel": "blobs", "pos": [1360, 840], "size": [260, 55] },
+    { "id": "blob", "type": "database", "label": "Local Blob", "sublabel": "disk fallback", "pos": [320, 820], "size": [120, 55] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Production region", "wraps": ["lb", "api", "db", "redis", "s3", "blob", "worker", "vec", "chk", "exp"] },
+    { "kind": "security-group", "label": "API trust zone", "wraps": ["lb", "api"] }
+  ],
+  "connections": [
+    { "id": "user-to-lb", "from": "user", "to": "lb", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "lb-to-api", "from": "lb", "to": "api", "label": "HTTPS", "fromSide": "right", "toSide": "left" },
+    { "id": "api-to-db", "from": "api", "to": "db", "label": "metadata", "fromSide": "bottom", "toSide": "top", "via": [[1115,400],[1175,780]], "labelAt": [1145,470] },
+    { "id": "api-to-redis", "from": "api", "to": "redis", "label": "cache key", "fromSide": "bottom", "toSide": "top", "via": [[1115,400],[665,780]], "labelAt": [890,470] },
+    { "id": "api-to-s3", "from": "api", "to": "s3", "label": "raw blobs", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "via": [[1115,400],[1490,800]], "labelAt": [1303,470] },
+    { "id": "api-to-blob", "from": "api", "to": "blob", "label": "local fallback", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "via": [[1115,400],[380,780]], "labelAt": [748,470] },
+    { "id": "api-to-worker", "from": "api", "to": "worker", "label": "enqueue", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "via": [[1115,400],[1470,400]], "labelAt": [1293,470] },
+    { "id": "worker-to-llm", "from": "worker", "to": "llm", "label": "process + score", "fromSide": "bottom", "toSide": "top", "via": [[1470,500],[1950,530]], "labelAt": [1710,530] },
+    { "id": "worker-to-vec", "from": "worker", "to": "vec", "label": "embed", "fromSide": "bottom", "toSide": "top", "via": [[1470,500],[1665,620]], "labelAt": [1568,570] },
+    { "id": "vec-to-db", "from": "vec", "to": "db", "label": "vectors", "fromSide": "bottom", "toSide": "top", "via": [[1665,660],[1200,780]], "labelAt": [1433,700] },
+    { "id": "llm-to-redis", "from": "llm", "to": "redis", "label": "cache", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "via": [[1950,560],[700,780]], "labelAt": [1325,670] },
+    { "id": "worker-to-s3", "from": "worker", "to": "s3", "label": "save text", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "via": [[1470,500],[1490,800]], "labelAt": [1480,649] }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Clients", "items": ["React SPA (Vite) on Vercel", "Cloudflare load balancer / TLS"] },
+    { "dot": "emerald", "title": "Backend", "items": ["FastAPI ingestion gateway (7 routers)", "ARQ background worker (async jobs)", "Fallback / production dual-mode storage"] },
+    { "dot": "violet", "title": "AI Engine", "items": ["NVIDIA NIM LLM (llama-3.2-11b-vision-instruct)", "NIM embedding (nv-embedqa-e5-v5)", "Redis prompt cache + circuit breaker", "pgvector hybrid (cosine + BM25) retrieval"] },
+    { "dot": "rose", "title": "Storage & Resilience", "items": ["PostgreSQL + pgvector", "S3 / MinIO blobs", "SQLite local fallback", "ARQ jobs (pending→processing→done→failed)"] }
+  ]
+}

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import Literal
+
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -16,6 +20,8 @@ class ChatResponse(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     confidence_score: float | None = None
     sources: list[SourceSnippet] = Field(default_factory=list)
+    # "vector" = pgvector+BM25 hybrid path; "keyword" = token-intersection fallback
+    retrieval_mode: Literal["vector", "keyword"] | None = None
 
     @model_validator(mode="after")
     def populate_confidence_score(self) -> "ChatResponse":

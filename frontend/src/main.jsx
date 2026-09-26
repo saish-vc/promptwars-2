@@ -160,6 +160,89 @@ function App() {
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState("");
 
+  // Sample document content (loaded from demo files)
+  const DEMO_LEGAL_NOTICE = `FORMAL NOTICE OF MATERIAL BREACH OF MASTER SERVICES AGREEMENT AND DEMAND FOR IMMEDIATE CURE
+
+DATE: September 19, 2026
+DELIVERY METHOD: Registered Email & Overnight Courier
+
+FROM:
+Apex Cloud Technologies Inc. ("Licensor / Service Provider")
+100 Financial Way, Suite 1400
+New York, NY 10005
+Contact: legal@apexcloudtech.com
+
+TO:
+Vanguard Logistics International LLC ("Licensee / Customer")
+840 Ocean Boulevard, Suite 500
+Miami, FL 33139
+Attn: Legal Department & Chief Financial Officer
+
+RE: Formal Demand Notice under Master SaaS Services Agreement Dated January 15, 2025
+
+Dear Sir / Madam,
+
+PLEASE TAKE NOTICE that Vanguard Logistics International LLC ("Licensee") is in material breach of the Master SaaS Services Agreement (the "Agreement") entered into with Apex Cloud Technologies Inc. ("Licensor") on January 15, 2025.
+
+1. MONETARY BREACH AND PAYMENT DEFAULT (SECTION 3.2):
+Under Section 3.2 of the Agreement, Licensee agreed to remit recurring monthly platform fees of $45,000.00 net 30 days from invoice date. As of September 19, 2026, the following invoices remain unpaid:
+  - Invoice #INV-2026-0781 (Due July 31, 2026): $45,000.00
+  - Invoice #INV-2026-0894 (Due August 31, 2026): $45,000.00
+Total Overdue Amount: $90,000.00 (plus accrued late interest of 1.5% per month per Section 3.4).
+
+2. UNAUTHORIZED DATA EXPLOITATION & PROPRIETARY INFRINGEMENT (SECTION 9.4):
+Forensic security audit logs indicate that between August 12, 2026 and August 28, 2026, automated scraping bots registered to Licensee IP range 198.51.100.45 executed 420,000 unauthorized requests against Licensor's proprietary pricing matrix API endpoints. This action constitutes a willful violation of Section 9.4 (Reverse Engineering and Data Scraping Restrictions).
+
+3. FORMAL 15-DAY CURE DEMAND:
+Pursuant to Section 14.2 of the Agreement, Licensor hereby demands that Licensee fully cure the aforesaid material breaches within fifteen (15) calendar days from receipt of this Notice (no later than October 4, 2026 at 5:00 PM EST). Full cure requires:
+  (a) Immediate wire transfer of $90,000.00 plus $2,700.00 late interest ($92,700.00 total) to Licensor's designated bank account; and
+  (b) Submission of a signed officer certificate verifying complete cessation and deletion of all scraped data.
+
+4. REMEDIES UPON FAILURE TO CURE:
+In the event Licensee fails to cure by October 4, 2026:
+  - Platform access will be immediately suspended under Section 14.3;
+  - The remaining contract balance of $360,000.00 for the 2026-2027 term will be accelerated and become immediately due;
+  - Licensor will enforce the contractual Liquidated Damages penalty of $250,000.00 under Section 9.5; and
+  - Licensor will commence legal action in the Supreme Court of New York, seeking full monetary recovery, injunctive relief, and reasonable attorney fees under Section 18.2.
+
+5. GOVERNING LAW:
+This Notice and all claims arising hereunder shall be governed by and construed in accordance with the laws of the State of New York.
+
+Sincerely,
+Apex Cloud Technologies Inc.
+By: Eleanor Vance, General Counsel`;
+
+  const DEMO_COUNTER_NOTICE = `RESPONSE TO NOTICE OF ALLEGED BREACH AND SETTLEMENT OFFER
+
+DATE: September 22, 2026
+
+FROM:
+Vanguard Logistics International LLC ("Licensee")
+840 Ocean Boulevard, Suite 500, Miami, FL 33139
+
+TO:
+Apex Cloud Technologies Inc. ("Licensor")
+100 Financial Way, Suite 1400, New York, NY 10005
+
+RE: Response and Counter-Proposal to Breach Notice Dated September 19, 2026
+
+Dear Ms. Vance,
+
+We acknowledge receipt of your letter dated September 19, 2026. Licensee disputes the claims as follows:
+
+1. SERVICE LEVEL AGREEMENT (SLA) CREDITS & ADJUSTED PAYMENT:
+Under SLA Section 4.3, Licensor experienced 36.4 hours of unscheduled platform downtime during July and August 2026. Licensee is entitled to $35,000.00 in SLA outage credits. Licensee proposes a net payment of $55,000.00 in full settlement of overdue fees by October 15, 2026.
+
+2. LEGITIMATE PARTNER API INTEGRATION:
+The automated queries were executed via documented partner webhooks for inventory sync and do not constitute reverse engineering under Section 9.1. Licensee agrees to a joint technical audit.
+
+3. REJECTION OF LIQUIDATED DAMAGES & PRE-SUIT MEDIATION:
+Licensee rejects the $250,000.00 liquidated damages claim as an illegal penalty and requests executive mediation under Section 17.1 before any court action.
+
+Sincerely,
+Vanguard Logistics International LLC
+By: Marcus Thorne, Chief Operating Officer`;
+
   // Export state
   const [exportContent, setExportContent] = useState("");
   const [exportLoading, setExportLoading] = useState(false);
@@ -413,6 +496,7 @@ function App() {
           role: "assistant",
           text: data.answer,
           confidence: data.confidence_score || data.confidence,
+          retrieval_mode: data.retrieval_mode || null,
           sources: data.sources || [],
         },
       ]);
@@ -636,6 +720,38 @@ function App() {
                     ✅ Document Ingested Successfully — ID: <span style={{ fontFamily: "var(--font-mono)" }}>{currentDoc.doc_id}</span>
                   </div>
                 )}
+
+                {/* Demo document quick-load buttons */}
+                <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "13px", color: "var(--text-secondary)", alignSelf: "center" }}>Load sample:</span>
+                  <button
+                    id="load-demo-legal-notice"
+                    type="button"
+                    className="btn-secondary"
+                    style={{ fontSize: "12px", padding: "5px 12px" }}
+                    onClick={() => {
+                      setTextInput(DEMO_LEGAL_NOTICE);
+                      announce("Demo legal notice loaded into text input.");
+                    }}
+                  >
+                    📄 Breach Notice (Apex → Vanguard)
+                  </button>
+                  <button
+                    id="load-demo-counter-notice"
+                    type="button"
+                    className="btn-secondary"
+                    style={{ fontSize: "12px", padding: "5px 12px" }}
+                    onClick={() => {
+                      setTextInput(DEMO_COUNTER_NOTICE);
+                      announce("Demo counter-notice loaded into text input.");
+                    }}
+                  >
+                    📄 Counter-Notice (Vanguard response)
+                  </button>
+                </div>
+                <p style={{ fontSize: "11px", color: "var(--text-secondary)", marginBottom: "16px", fontStyle: "italic" }}>
+                  ⚠️ Hackathon demo — do not upload real sensitive contracts. Documents are not encrypted at rest and may not persist across server restarts.
+                </p>
 
                 <div className="dual-panel-grid">
                   {/* Upload File Panel */}
@@ -1103,8 +1219,26 @@ function App() {
                       >
                         <div>{msg.text}</div>
                         {msg.confidence !== undefined && (
-                          <div style={{ fontSize: "11px", opacity: 0.8, marginTop: "4px" }}>
-                            Confidence Score: {(msg.confidence * 100).toFixed(0)}%
+                          <div style={{ fontSize: "11px", opacity: 0.8, marginTop: "4px", display: "flex", gap: "8px", alignItems: "center" }}>
+                            <span>Confidence: {(msg.confidence * 100).toFixed(0)}%</span>
+                            {msg.retrieval_mode && (
+                              <span
+                                title={msg.retrieval_mode === "vector" ? "Answer retrieved via pgvector + BM25 hybrid search" : "Answer retrieved via keyword intersection fallback"}
+                                style={{
+                                  fontSize: "10px",
+                                  fontWeight: "700",
+                                  padding: "1px 6px",
+                                  borderRadius: "4px",
+                                  background: msg.retrieval_mode === "vector" ? "rgba(99,102,241,0.35)" : "rgba(234,179,8,0.3)",
+                                  color: msg.retrieval_mode === "vector" ? "#c4b5fd" : "#fde68a",
+                                  letterSpacing: "0.04em",
+                                  textTransform: "uppercase",
+                                  cursor: "help",
+                                }}
+                              >
+                                {msg.retrieval_mode === "vector" ? "⚡ Vector" : "🔤 Keyword"}
+                              </span>
+                            )}
                           </div>
                         )}
                       </div>
@@ -1190,7 +1324,8 @@ function App() {
       </div>
 
       <footer role="contentinfo" style={{ textAlign: "center", padding: "16px", borderTop: "1px solid var(--border-divider)", color: "var(--text-secondary)", fontSize: "12px" }}>
-        LegiFlow Legal AI Platform • General legal information, not formal legal advice.
+        LegiFlow Legal AI Platform • General legal information, not formal legal advice. •{" "}
+        <span style={{ fontStyle: "italic" }}>Hackathon demo — uploaded documents are not encrypted at rest and are deleted on server restart. Do not upload real sensitive contracts.</span>
       </footer>
     </div>
   );

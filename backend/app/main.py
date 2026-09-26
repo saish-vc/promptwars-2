@@ -37,6 +37,10 @@ async def lifespan(_: FastAPI):
     2. Dispose SQLAlchemy engine.
     """
     # ── 1. Database ───────────────────────────────────────────
+    missing = settings.production_errors()
+    if missing:
+        raise RuntimeError("Production configuration is missing: " + ", ".join(missing))
+
     try:
         from app.db.base import create_all_tables, dispose_engine
 

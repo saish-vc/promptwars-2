@@ -99,6 +99,23 @@ class Settings(BaseSettings):
         """True when embeddings are enabled and an embedding model is set."""
         return self.embedding_enabled and bool(self.embedding_model)
 
+    def production_errors(self) -> list[str]:
+        """Return missing services that must not silently degrade in production."""
+        if self.enable_fallback_mode:
+            return []
+        if self.llm_provider not in {"groq", "nim"}:
+            return ["LLM_PROVIDER (must be groq or nim)"]
+        required = {
+            "POSTGRES_URL": self.postgres_url,
+            "REDIS_URL": self.redis_url,
+            "S3_ACCESS_KEY": self.s3_access_key,
+            "S3_SECRET_KEY": self.s3_secret_key,
+        }
+        required[f"{self.llm_provider.upper()}_API_KEY"] = (
+            self.groq_api_key if self.llm_provider == "groq" else self.nim_api_key
+        )
+        return [name for name, value in required.items() if not value]
+
 
 settings = Settings()
 
